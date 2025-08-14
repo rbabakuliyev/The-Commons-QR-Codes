@@ -7,13 +7,100 @@
   <meta name="description" content="Enter your school email to view and download your Commons QR code." />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <style>
-    /* Same CSS from previous version */
+    :root{
+      --bg:#0b0f19;         /* deep navy */
+      --bg2:#0f172a;        /* slate */
+      --ink:#f8fafc;        /* almost white */
+      --muted:#cbd5e1;      /* slate-300 */
+      --brand:#f59e0b;      /* amber */
+      --brand-dark:#b45309; /* darker amber */
+      --surface:#0e1324;    /* card surface */
+      --border:rgba(255,255,255,.10);
+      --ring: rgba(245,158,11,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+
+    /* === Background with subtle pattern + gradient band === */
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial;
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 800px at 80% -10%, #1f2937 0%, var(--bg) 45%),
+        linear-gradient(180deg, rgba(245,158,11,.10), rgba(255,255,255,0) 240px),
+        repeating-linear-gradient(135deg, rgba(255,255,255,.04) 0 2px, transparent 2px 10px),
+        var(--bg2);
+      display:grid; min-height:100dvh; grid-template-rows:auto 1fr auto;
+    }
+
+    /* === Header === */
+    header{
+      display:flex; align-items:center; gap:16px; padding:18px 22px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(245,158,11,.14), rgba(245,158,11,.04) 70%, transparent);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .brand-wrap{display:flex; align-items:center; gap:14px; width:100%; max-width:1180px; margin:0 auto}
+    .logo{width:72px; height:auto; filter: drop-shadow(0 6px 18px rgba(0,0,0,.55));}
+    .titles{line-height:1.05}
+    .school{margin:0; font-size: clamp(20px, 3.2vw, 28px); letter-spacing:.2px; font-weight:900}
+    .school .lobos{color:var(--brand)}
+    .sub{margin:3px 0 0; color:var(--muted); font-size:clamp(12px,2vw,14px)}
+
+    /* === Main / Card === */
+    main{display:grid; place-items:start center; padding:28px}
+    .container{width:100%; max-width:980px}
+    .card{width:100%; background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)); border:1px solid var(--border);
+      border-radius:20px; padding:24px; box-shadow:0 24px 70px rgba(0,0,0,.35)}
+
+    .section-title{display:flex; align-items:center; gap:10px; margin:0 0 10px}
+    .section-title .dot{width:10px; height:10px; border-radius:999px; background:var(--brand)}
+    .lead{margin:0 0 20px; color:var(--muted); font-size:clamp(14px, 2.4vw, 16px)}
+
+    form{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+    .input{
+      flex:1 1 360px; background:#0f1324; border:2px solid var(--border); color:var(--ink);
+      padding:18px 16px; border-radius:14px; outline:none; font-size:clamp(16px, 3.4vw, 18px);
+      min-height:56px;
+    }
+    .input:focus{border-color:var(--brand); box-shadow:0 0 0 6px var(--ring)}
+
+    .btn{appearance:none; border:2px solid rgba(255,255,255,.16); background:linear-gradient(180deg, var(--brand), var(--brand-dark));
+      color:#111; padding:16px 22px; border-radius:14px; font-weight:800; cursor:pointer; font-size:clamp(16px, 3.4vw, 18px);
+      min-height:56px; letter-spacing:.2px; text-decoration:none; display:inline-flex; align-items:center; justify-content:center}
+    .btn.secondary{background:#1f2937; color:var(--ink)}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+
+    .divider{height:1px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent); margin:20px 0}
+
+    .result{margin-top:10px; display:grid; gap:14px}
+    .qr-wrap{display:grid; grid-template-columns: minmax(160px, 220px) 1fr; gap:22px; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:18px}
+    img.qr{width:100%; max-width:220px; height:auto; aspect-ratio:1/1; object-fit:contain; border-radius:10px; background:#020617}
+    .meta{display:grid; gap:10px}
+    .row{display:grid; gap:6px}
+    .key{color:var(--muted); font-size:14px}
+    .value{font-weight:800; font-size:18px}
+    .actions{display:flex; gap:12px; flex-wrap:wrap}
+
+    .msg{padding:14px 16px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--muted)}
+    .msg.error{border-color: rgba(239,68,68,.5); color:#fecaca; background: rgba(239,68,68,.08)}
+
+    details.security{margin-top:12px}
+    code.kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; background:#0b1221; border:1px solid rgba(255,255,255,.1); padding:2px 6px; border-radius:6px}
+
+    footer{padding:16px 18px; color:var(--muted); font-size:13px; border-top:1px solid var(--border); text-align:center;
+      background:linear-gradient(0deg, rgba(245,158,11,.10), rgba(255,255,255,0));}
+
+    @media (max-width:720px){
+      .logo{width:64px}
+      .qr-wrap{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
   <header>
     <div class="brand-wrap">
-      <img class="logo" src="mascot.png" alt="Magnolia Science Academy 5 Lobos Mascot" />
+      <img class="logo" src="assets/mascot.png" alt="Magnolia Science Academy 5 Lobos Mascot" />
       <div class="titles">
         <h1 class="school">Magnolia Science Academy 5 • <span class="lobos">LOBOS</span></h1>
         <p class="sub">Commons QR Lookup</p>
@@ -22,24 +109,29 @@
   </header>
 
   <main>
-    <section class="card" aria-labelledby="title">
-      <p id="title" class="lead">Enter your school email to view your personal Commons QR. Buttons are large for easy tapping.</p>
+    <div class="container">
+      <section class="card" aria-labelledby="title">
+        <div class="section-title"><span class="dot"></span><h2 id="title" style="margin:0">Student Access</h2></div>
+        <p class="lead">Enter your school email to view your personal Commons QR. Buttons are large for easy tapping.</p>
 
-      <form id="lookup-form" autocomplete="off">
-        <input id="email" class="input" name="email" type="email" placeholder="student@school.org" required aria-label="Student email" />
-        <button class="btn" id="findBtn" type="submit">Find my QR</button>
-        <button class="btn secondary" id="clearBtn" type="button" title="Clear">Clear</button>
-      </form>
+        <form id="lookup-form" autocomplete="off">
+          <input id="email" class="input" name="email" type="email" placeholder="student@school.org" required aria-label="Student email" />
+          <button class="btn" id="findBtn" type="submit">Find my QR</button>
+          <button class="btn secondary" id="clearBtn" type="button" title="Clear">Clear</button>
+        </form>
 
-      <div class="result" id="result"></div>
+        <div class="divider" role="presentation"></div>
 
-      <details class="security">
-        <summary>Privacy note</summary>
-        <div class="msg">
-          This page looks up data from a local CSV file in this repository (<code class="kbd">students.csv</code>). If the repo is public, the CSV is public. Consider a private host or using hashed emails; set <code class="kbd">USE_HASH_MATCH = true</code> and add an <code class="kbd">email_hash</code> column.
-        </div>
-      </details>
-    </section>
+        <div class="result" id="result"></div>
+
+        <details class="security">
+          <summary>Privacy note</summary>
+          <div class="msg">
+            This page looks up data from a local CSV file in this repository (<code class="kbd">students.csv</code>). If the repo is public, the CSV is public. Consider a private host or using hashed emails; set <code class="kbd">USE_HASH_MATCH = true</code> and add an <code class="kbd">email_hash</code> column.
+          </div>
+        </details>
+      </section>
+    </div>
   </main>
 
   <footer>
@@ -48,7 +140,128 @@
 
   <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    /* Same JavaScript logic from previous version */
+    const emailInput = document.getElementById('email');
+    const form = document.getElementById('lookup-form');
+    const result = document.getElementById('result');
+    const yearEl = document.getElementById('year');
+    const clearBtn = document.getElementById('clearBtn');
+    yearEl.textContent = new Date().getFullYear();
+
+    // ==== CONFIG ====
+    // Put students.csv in the same folder.
+    // Required headers: email, name, qr_url  (or email_hash + name + qr_url if hashing)
+    const CSV_PATH = 'students.csv';
+    const USE_HASH_MATCH = false; // Set to true if your CSV has email_hash
+
+    async function sha256Hex(str){
+      const enc = new TextEncoder().encode(str);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    let rows = [];
+
+    async function loadCSV(){
+      return new Promise((resolve,reject)=>{
+        Papa.parse(CSV_PATH, { header:true, download:true, skipEmptyLines:true,
+          complete: (res)=> resolve(res.data), error: (err)=> reject(err)
+        });
+      });
+    }
+
+    const normalizeEmail = v => (v||'').trim().toLowerCase();
+
+    function renderMessage(text, kind='info'){
+      result.innerHTML = `<div class="msg ${kind==='error'?'error':''}">${text}</div>`;
+    }
+
+    function renderQR({name,email,qr_url}){
+      const safeName = name || '(No name)';
+      const safeEmail = email || '';
+      const url = qr_url || '';
+      result.innerHTML = `
+        <div class="qr-wrap">
+          <img class="qr" id="qrImg" alt="QR code for ${safeName}" src="${url}" />
+          <div class="meta">
+            <div class="row"><span class="key">Name</span><div class="value">${safeName}</div></div>
+            <div class="row"><span class="key">Email</span><div class="value">${safeEmail}</div></div>
+            <div class="actions">
+              <a class="btn" id="downloadBtn" href="${url}" target="_blank" rel="noopener noreferrer">Open in New Tab</a>
+              <button class="btn secondary" id="copyBtn" type="button">Copy Link</button>
+              <button class="btn secondary" id="printBtn" type="button">Print</button>
+            </div>
+          </div>
+        </div>`;
+
+      document.getElementById('copyBtn').onclick = async () => {
+        try { await navigator.clipboard.writeText(url); toast('Link copied!'); } catch { toast('Unable to copy', true); }
+      };
+      document.getElementById('printBtn').onclick = () => {
+        const w = window.open('', 'PRINT', 'height=700,width=540');
+        const img = `<img src="${url}" style="width:100%;max-width:520px" />`;
+        w.document.write(`<html><head><title>${safeName} QR</title><meta name='viewport' content='width=device-width, initial-scale=1' /></head><body style="margin:0;display:grid;place-items:center">${img}</body></html>`);
+        w.document.close(); w.focus(); w.print(); w.close();
+      };
+    }
+
+    function toast(text, isError=false){
+      const el = document.createElement('div');
+      el.textContent = text;
+      el.style.cssText = `position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:12px 16px;border-radius:12px;background:${isError?'#7f1d1d':'#065f46'};color:white;z-index:9999;opacity:0;transition:opacity .2s;font-weight:700`;
+      document.body.appendChild(el);
+      requestAnimationFrame(()=>{ el.style.opacity = 1; });
+      setTimeout(()=>{ el.style.opacity = 0; setTimeout(()=>el.remove(), 250); }, 1500);
+    }
+
+    async function ensureDataLoaded(){
+      if(rows.length) return rows;
+      try{
+        rows = await loadCSV();
+        rows = rows.map(r=>{
+          const obj={};
+          for(const k in r) obj[k.trim().toLowerCase()] = (r[k] ?? '').toString().trim();
+          return obj;
+        });
+        return rows;
+      }catch(e){
+        console.error(e);
+        renderMessage('Could not load students.csv. Ensure it is in the same folder and public to GitHub Pages.', 'error');
+        throw e;
+      }
+    }
+
+    async function findByEmail(inputEmail){
+      const list = await ensureDataLoaded();
+      const email = normalizeEmail(inputEmail);
+      if(!email) return null;
+      if(USE_HASH_MATCH){
+        const hash = await sha256Hex(email);
+        return list.find(r => (r['email_hash']||'').toLowerCase() === hash);
+      } else {
+        return list.find(r => normalizeEmail(r['email']) === email);
+      }
+    }
+
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      result.innerHTML = '';
+      const findBtn = document.getElementById('findBtn');
+      findBtn.disabled = true; findBtn.textContent = 'Looking…';
+      try{
+        const row = await findByEmail(emailInput.value);
+        if(!row){ renderMessage('No match. Check spelling or contact the office.', 'error'); return; }
+        if(!row['qr_url']){ renderMessage('Match found, but QR URL is missing in CSV for this student.', 'error'); return; }
+        renderQR({ name: row['name'], email: row['email'], qr_url: row['qr_url'] });
+      } finally {
+        findBtn.disabled = false; findBtn.textContent = 'Find my QR';
+      }
+    });
+
+    clearBtn.addEventListener('click', ()=>{
+      emailInput.value = '';
+      result.innerHTML = '';
+      emailInput.focus();
+    });
   </script>
 </body>
 </html>
