@@ -59,7 +59,7 @@
 
     .section-title{display:flex; align-items:center; gap:10px; margin:0 0 12px}
     .section-title .dot{width:12px; height:12px; border-radius:999px; background:var(--brand)}
-    .lead{margin:0 0 22px; color:var(--muted); font-size: clamp(16px, 2.8vw, 20px)} /* bigger */
+    .lead{margin:0 0 30px; color:var(--muted); font-size: clamp(16px, 2.8vw, 20px)} /* bigger */
 
     form{display:flex; gap:14px; flex-wrap:wrap; align-items:center}
     .input{
@@ -119,7 +119,7 @@
     <div class="container">
       <section class="card" aria-labelledby="title">
         <div class="section-title"><span class="dot"></span><h2 id="title" style="margin:0">Student Access</h2></div>
-        <p class="lead">Enter your school email to view your personal Commons QR. Buttons are large and colorful for easy tapping.</p>
+        <p class="lead">Enter your school email to view your personal Commons QR.</p>
 
         <form id="lookup-form" autocomplete="off">
           <input id="email" class="input" name="email" type="email" placeholder="student@school.org" required aria-label="Student email" />
@@ -272,4 +272,5 @@
   </script>
 </body>
 </html>
+
 
