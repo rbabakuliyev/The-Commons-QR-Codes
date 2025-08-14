@@ -24,7 +24,7 @@
     *{box-sizing:border-box}
     html,body{height:100%}
 
-    /* ==== Colorful background (brand wave + diagonal pattern) ==== */
+    /* ==== Colorful background ==== */
     body{
       margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial;
       color:var(--ink);
@@ -45,7 +45,7 @@
       box-shadow: 0 10px 30px rgba(0,0,0,.25);
     }
     .brand-wrap{display:flex; align-items:center; gap:12px; width:100%; max-width:1180px; margin:0 auto}
-    .logo{width:56px; height:auto; filter: drop-shadow(0 6px 18px rgba(0,0,0,.55));} /* smaller mascot */
+    .logo{width:56px; height:auto; filter: drop-shadow(0 6px 18px rgba(0,0,0,.55));}
     .titles{line-height:1.05}
     .school{margin:0; font-size: clamp(24px, 4.4vw, 36px); letter-spacing:.2px; font-weight:900}
     .school .lobos{color:var(--brand)}
@@ -59,14 +59,18 @@
 
     .section-title{display:flex; align-items:center; gap:10px; margin:0 0 12px}
     .section-title .dot{width:12px; height:12px; border-radius:999px; background:var(--brand)}
-    .lead{margin:0 0 30px; color:var(--muted); font-size: clamp(16px, 2.8vw, 20px)} /* bigger */
+    .lead{margin:0 0 22px; color:var(--muted); font-size: clamp(16px, 2.8vw, 20px)}
 
+    /* Username input with domain suffix */
     form{display:flex; gap:14px; flex-wrap:wrap; align-items:center}
+    .email-wrap{position:relative; flex:1 1 420px}
     .input{
-      flex:1 1 420px; background:#0f1324; border:2px solid var(--border); color:var(--ink);
+      width:100%; background:#0f1324; border:2px solid var(--border); color:var(--ink);
       padding:20px 18px; border-radius:16px; outline:none; font-size: clamp(18px, 3.6vw, 20px);
-      min-height:60px;
+      min-height:60px; padding-right:210px;
     }
+    .suffix{position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#93c5fd; font-weight:700; pointer-events:none}
+    .hint{font-size:14px; color:#9ca3af; margin-top:6px}
     .input:focus{border-color:var(--brand); box-shadow:0 0 0 8px var(--ring)}
 
     /* Colorful buttons */
@@ -82,11 +86,11 @@
 
     .result{margin-top:10px; display:grid; gap:16px}
     .qr-wrap{display:grid; grid-template-columns: minmax(180px, 260px) 1fr; gap:26px; align-items:center; background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px}
-    img.qr{width:100%; max-width:500px; height:auto; aspect-ratio:1/1; object-fit:contain; border-radius:12px; background:#020617}
+    img.qr{width:100%; max-width:260px; height:auto; aspect-ratio:1/1; object-fit:contain; border-radius:12px; background:#020617}
     .meta{display:grid; gap:12px}
     .row{display:grid; gap:6px}
     .key{color:var(--muted); font-size:16px}
-    .value{font-weight:900; font-size:22px} /* bigger text */
+    .value{font-weight:900; font-size:22px}
     .actions{display:flex; gap:14px; flex-wrap:wrap}
 
     .msg{padding:16px 18px; border-radius:14px; border:1px solid var(--border); background:var(--surface); color:var(--muted)}
@@ -101,13 +105,14 @@
     @media (max-width:720px){
       .logo{width:52px}
       .qr-wrap{grid-template-columns:1fr}
+      .suffix{right:10px}
     }
   </style>
 </head>
 <body>
   <header>
     <div class="brand-wrap">
-      <img class="logo" src="mascot.png" alt="Magnolia Science Academy 5 Lobos Mascot" />
+      <img class="logo" src="assets/mascot.png" alt="Magnolia Science Academy 5 Lobos Mascot" />
       <div class="titles">
         <h1 class="school">Magnolia Science Academy 5 • <span class="lobos">LOBOS</span></h1>
         <p class="sub">Commons QR Lookup</p>
@@ -119,10 +124,14 @@
     <div class="container">
       <section class="card" aria-labelledby="title">
         <div class="section-title"><span class="dot"></span><h2 id="title" style="margin:0">Student Access</h2></div>
-        <p class="lead">Enter your school email to view your personal Commons QR.</p>
+        <p class="lead">Type your username or full email. We automatically add <strong>@magnoliascience.org</strong>.</p>
 
         <form id="lookup-form" autocomplete="off">
-          <input id="email" class="input" name="email" type="email" placeholder="student@school.org" required aria-label="Student email" />
+          <div class="email-wrap">
+            <input id="email" class="input" name="email" type="text" placeholder="username or email" aria-label="Student email or username" />
+            <span class="suffix" aria-hidden="true">@magnoliascience.org</span>
+            <div class="hint">Example: <code class="kbd">j.doe</code> → <code class="kbd">j.doe@magnoliascience.org</code></div>
+          </div>
           <button class="btn primary" id="findBtn" type="submit">Find my QR</button>
           <button class="btn secondary" id="clearBtn" type="button" title="Clear">Clear</button>
         </form>
@@ -147,28 +156,58 @@
 
   <script defer src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script>
-    const emailInput = document.getElementById('email');
     const form = document.getElementById('lookup-form');
+    const emailInput = document.getElementById('email');
     const result = document.getElementById('result');
     const yearEl = document.getElementById('year');
     const clearBtn = document.getElementById('clearBtn');
     yearEl.textContent = new Date().getFullYear();
 
     // ==== CONFIG ====
-    // Put students.csv in the same folder.
-    // Required headers: email, name, qr_url  (or email_hash + name + qr_url if hashing)
     const CSV_PATH = 'students.csv';
     const USE_HASH_MATCH = false; // Set to true if your CSV has email_hash
+    const SCHOOL_DOMAIN = 'magnoliascience.org';
 
+    // Utility: SHA-256 for hash matching
     async function sha256Hex(str){
       const enc = new TextEncoder().encode(str);
       const buf = await crypto.subtle.digest('SHA-256', enc);
       return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
     }
 
+    // Normalize helpers
+    const normalizeEmail = v => (v||'').trim().toLowerCase();
+    function toSchoolEmail(input){
+      const val = normalizeEmail(input);
+      if(!val) return '';
+      return val.includes('@') ? val : `${val}@${SCHOOL_DOMAIN}`;
+    }
+
+    // Try to be flexible with CSV headers
+    function getFirstKey(obj, includes){
+      const key = Object.keys(obj).find(k => k.toLowerCase().includes(includes));
+      return key || '';
+    }
+
+    // Make awkward links (Google Drive/Dropbox) embeddable
+    function normalizeUrl(u){
+      const url = (u||'').trim();
+      if(!url) return '';
+      // Google Drive file link → direct view
+      const g = url.match(/https?:\/\/drive\.google\.com\/file\/d\/([^/]+)\/view/i);
+      if(g) return `https://drive.google.com/uc?export=view&id=${g[1]}`;
+      const g2 = url.match(/https?:\/\/drive\.google\.com\/open\?id=([^&]+)/i);
+      if(g2) return `https://drive.google.com/uc?export=view&id=${g2[1]}`;
+      // Dropbox share → raw
+      const d = url.match(/https?:\/\/www\.dropbox\.com\/s\/(.+)/i);
+      if(d) return url.replace(/\?dl=0$/,'').replace('www.dropbox.com','dl.dropboxusercontent.com');
+      return url;
+    }
+
+    // CSV cache
     let rows = [];
 
-    async function loadCSV(){
+    function loadCSV(){
       return new Promise((resolve,reject)=>{
         Papa.parse(CSV_PATH, { header:true, download:true, skipEmptyLines:true,
           complete: (res)=> resolve(res.data), error: (err)=> reject(err)
@@ -176,19 +215,23 @@
       });
     }
 
-    const normalizeEmail = v => (v||'').trim().toLowerCase();
-
     function renderMessage(text, kind='info'){
       result.innerHTML = `<div class="msg ${kind==='error'?'error':''}">${text}</div>`;
     }
 
-    function renderQR({name,email,qr_url}){
+    function renderQR({ name, email, qr_url }){
       const safeName = name || '(No name)';
       const safeEmail = email || '';
-      const url = qr_url || '';
+      const url = normalizeUrl(qr_url || '');
+
+      if(!url){
+        renderMessage('Match found, but QR URL is empty in CSV for this student.', 'error');
+        return;
+      }
+
       result.innerHTML = `
         <div class="qr-wrap">
-          <img class="qr" id="qrImg" alt="QR code for ${safeName}" src="${url}" />
+          <img class="qr" id="qrImg" alt="QR code for ${safeName}" referrerpolicy="no-referrer" src="${url}" />
           <div class="meta">
             <div class="row"><span class="key">Name</span><div class="value">${safeName}</div></div>
             <div class="row"><span class="key">Email</span><div class="value">${safeEmail}</div></div>
@@ -199,6 +242,12 @@
             </div>
           </div>
         </div>`;
+
+      // Handle broken image sources gracefully
+      const img = document.getElementById('qrImg');
+      img.onerror = () => {
+        renderMessage('We found your record, but the QR image could not be loaded. Check that the URL is public and uses HTTPS.', 'error');
+      };
 
       document.getElementById('copyBtn').onclick = async () => {
         try { await navigator.clipboard.writeText(url); toast('Link copied!'); } catch { toast('Unable to copy', true); }
@@ -223,8 +272,9 @@
     async function ensureDataLoaded(){
       if(rows.length) return rows;
       try{
-        rows = await loadCSV();
-        rows = rows.map(r=>{
+        const raw = await loadCSV();
+        // Lowercase/trim keys and values
+        rows = raw.map(r=>{
           const obj={};
           for(const k in r) obj[k.trim().toLowerCase()] = (r[k] ?? '').toString().trim();
           return obj;
@@ -237,16 +287,29 @@
       }
     }
 
-    async function findByEmail(inputEmail){
+    async function findRecord(input){
       const list = await ensureDataLoaded();
-      const email = normalizeEmail(inputEmail);
+      const email = toSchoolEmail(input);
       if(!email) return null;
+
+      // Flexible column names
+      const sample = list[0] || {};
+      const emailKey = getFirstKey(sample, 'email') || 'email';
+      const nameKey  = getFirstKey(sample, 'name')  || 'name';
+      let qrKey = Object.keys(sample).find(k => /qr|code/.test(k));
+      qrKey = (qrKey || 'qr_url');
+
+      let row;
       if(USE_HASH_MATCH){
         const hash = await sha256Hex(email);
-        return list.find(r => (r['email_hash']||'').toLowerCase() === hash);
+        const hashKey = getFirstKey(sample, 'email_hash') || 'email_hash';
+        row = list.find(r => (r[hashKey]||'').toLowerCase() === hash);
       } else {
-        return list.find(r => normalizeEmail(r['email']) === email);
+        row = list.find(r => normalizeEmail(r[emailKey]) === normalizeEmail(email));
       }
+
+      if(!row) return null;
+      return { name: row[nameKey], email, qr_url: row[qrKey] };
     }
 
     form.addEventListener('submit', async (e)=>{
@@ -255,10 +318,9 @@
       const findBtn = document.getElementById('findBtn');
       findBtn.disabled = true; findBtn.textContent = 'Looking…';
       try{
-        const row = await findByEmail(emailInput.value);
-        if(!row){ renderMessage('No match. Check spelling or contact the office.', 'error'); return; }
-        if(!row['qr_url']){ renderMessage('Match found, but QR URL is missing in CSV for this student.', 'error'); return; }
-        renderQR({ name: row['name'], email: row['email'], qr_url: row['qr_url'] });
+        const rec = await findRecord(emailInput.value);
+        if(!rec){ renderMessage('No match. Try your full email or check spelling.', 'error'); return; }
+        renderQR(rec);
       } finally {
         findBtn.disabled = false; findBtn.textContent = 'Find my QR';
       }
@@ -272,5 +334,3 @@
   </script>
 </body>
 </html>
-
-
